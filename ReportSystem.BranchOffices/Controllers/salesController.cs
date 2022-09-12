@@ -12,52 +12,48 @@ namespace ReportSystem.BranchOffices.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class EmpleadosController : ControllerBase
+    public class salesController : ControllerBase
     {
-        private readonly EmpleadosContext _context;
+        private readonly salesContext _context;
 
-        public EmpleadosController(EmpleadosContext context)
+        public salesController(salesContext context)
         {
             _context = context;
         }
 
-        // GET: api/Empleados or api/empleados?username=Merill
+        // GET: api/sales
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<EmpleadoDto>>> GetAsync([FromQuery] string? username)
+        public async Task<ActionResult<IEnumerable<salesDto>>> Getsales()
         {
-            if (username == null)
-            {
-                return await _context.Empleados.ToListAsync();
-            }
-            return Ok(_context.Empleados.Where(empleados => empleados.username == username));
+            return await _context.sales.ToListAsync();
         }
 
-        // GET: api/Empleados/5
+        // GET: api/sales/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<EmpleadoDto>> GetEmpleadoDto(string id)
+        public async Task<ActionResult<salesDto>> GetsalesDto(string id)
         {
-            var empleadoDto = await _context.Empleados.FindAsync(id);
+            var salesDto = await _context.sales.FindAsync(id);
 
-            if (empleadoDto == null)
+            if (salesDto == null)
             {
                 return NotFound();
             }
 
-            return empleadoDto;
+            return salesDto;
         }
 
-        // PUT: api/Empleados/5
+        // PUT: api/sales/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutEmpleadoDto(string id, EmpleadoDto empleadoDto)
+        public async Task<IActionResult> PutsalesDto(string id, salesDto salesDto)
         {
-            if (id != empleadoDto.idEmpleados)
+            if (id != salesDto.username)
             {
                 return BadRequest();
             }
 
-            _context.Entry(empleadoDto).State = EntityState.Modified;
+            _context.Entry(salesDto).State = EntityState.Modified;
 
             try
             {
@@ -65,7 +61,7 @@ namespace ReportSystem.BranchOffices.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!EmpleadoDtoExists(id))
+                if (!salesDtoExists(id))
                 {
                     return NotFound();
                 }
@@ -78,20 +74,20 @@ namespace ReportSystem.BranchOffices.Controllers
             return NoContent();
         }
 
-        // POST: api/Empleados
+        // POST: api/sales
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
-        public async Task<ActionResult<EmpleadoDto>> PostEmpleadoDto(EmpleadoDto empleadoDto)
+        public async Task<ActionResult<salesDto>> PostsalesDto(salesDto salesDto)
         {
-            _context.Empleados.Add(empleadoDto);
+            _context.sales.Add(salesDto);
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException)
             {
-                if (EmpleadoDtoExists(empleadoDto.idEmpleados))
+                if (salesDtoExists(salesDto.username))
                 {
                     return Conflict();
                 }
@@ -101,28 +97,28 @@ namespace ReportSystem.BranchOffices.Controllers
                 }
             }
 
-            return CreatedAtAction("GetEmpleadoDto", new { id = empleadoDto.idEmpleados }, empleadoDto);
+            return CreatedAtAction("GetsalesDto", new { id = salesDto.username }, salesDto);
         }
 
-        // DELETE: api/Empleados/5
+        // DELETE: api/sales/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<EmpleadoDto>> DeleteEmpleadoDto(string id)
+        public async Task<ActionResult<salesDto>> DeletesalesDto(string id)
         {
-            var empleadoDto = await _context.Empleados.FindAsync(id);
-            if (empleadoDto == null)
+            var salesDto = await _context.sales.FindAsync(id);
+            if (salesDto == null)
             {
                 return NotFound();
             }
 
-            _context.Empleados.Remove(empleadoDto);
+            _context.sales.Remove(salesDto);
             await _context.SaveChangesAsync();
 
-            return empleadoDto;
+            return salesDto;
         }
 
-        private bool EmpleadoDtoExists(string id)
+        private bool salesDtoExists(string id)
         {
-            return _context.Empleados.Any(e => e.idEmpleados == id);
+            return _context.sales.Any(e => e.username == id);
         }
     }
 }

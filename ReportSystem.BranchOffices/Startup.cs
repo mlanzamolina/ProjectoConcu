@@ -40,7 +40,11 @@ namespace ReportSystem.BranchOffices
             {
                 options.UseMySQL(Configuration.GetConnectionString("DBConnection"));
             });
-           
+            services.AddDbContext<salesContext>(options =>
+            {
+                options.UseMySQL(Configuration.GetConnectionString("DBConnection"));
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

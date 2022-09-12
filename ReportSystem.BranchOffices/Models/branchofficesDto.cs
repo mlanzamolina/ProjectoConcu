@@ -8,6 +8,7 @@ namespace ReportSystem.BranchOffices.Models
         [Key]
         public string idBranchOffices { get; set; }
 
-        public string name { get; set; }
+        public string state { get; set; }
+        public string country { get; set; }
     }
 }
