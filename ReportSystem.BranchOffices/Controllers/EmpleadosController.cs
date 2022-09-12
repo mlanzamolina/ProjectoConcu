@@ -21,11 +21,15 @@ namespace ReportSystem.BranchOffices.Controllers
             _context = context;
         }
 
-        // GET: api/Empleados
+        // GET: api/Empleados or api/empleados?username=Merill
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<EmpleadoDto>>> GetEmpleados()
+        public async Task<ActionResult<IEnumerable<EmpleadoDto>>> GetAsync([FromQuery] string? username)
         {
-            return await _context.Empleados.ToListAsync();
+            if (username == null)
+            {
+                return await _context.Empleados.ToListAsync();
+            }
+            return Ok(_context.Empleados.Where(empleados => empleados.username == username));
         }
 
         // GET: api/Empleados/5
