@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -11,9 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ReportSystem.BranchOffices.Data;
 
-namespace ReportSystem.BranchOffices
+namespace ReportSystem.Gateway
 {
     public class Startup
     {
@@ -28,23 +26,6 @@ namespace ReportSystem.BranchOffices
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddDbContext<EmpleadosContext>(options => 
-            {
-                options.UseMySQL(Configuration.GetConnectionString("DBConnection"));
-            });
-            services.AddDbContext<branchofficesContext>(options =>
-            {
-                options.UseMySQL(Configuration.GetConnectionString("DBConnection"));
-            });
-            services.AddDbContext<carsContext>(options =>
-            {
-                options.UseMySQL(Configuration.GetConnectionString("DBConnection"));
-            });
-            services.AddDbContext<salesContext>(options =>
-            {
-                options.UseMySQL(Configuration.GetConnectionString("DBConnection"));
-            });
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
