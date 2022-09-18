@@ -1,0 +1,10 @@
+﻿{
+  "profiles": {
+    "ReportSystem.Collector": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

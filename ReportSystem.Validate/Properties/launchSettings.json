@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ReportSystem.Validate": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
