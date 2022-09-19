@@ -15,8 +15,7 @@ namespace ReportSystem.Collector
     {
         public static void Main(string[] args)
         {
-
-            string toValidate = "";
+            Console.WriteLine("***COLLECTOR***");
             while (true) {
                 var factory = new ConnectionFactory() { HostName = "localhost" };
                 using (var connection = factory.CreateConnection())
@@ -33,50 +32,36 @@ namespace ReportSystem.Collector
                     {
                         var body = ea.Body.ToArray();
                         var message = Encoding.UTF8.GetString(body);
-                        toValidate = message;
                         Console.WriteLine(" [x] Received {0}", message);
+                        Console.WriteLine("Sending {0}", message);
+                        factory = new ConnectionFactory() { HostName = "localhost" };
+                        using (var connectionSend = factory.CreateConnection())
+                        using (var channelSend = connectionSend.CreateModel())
+                        {
+                            channelSend.QueueDeclare(queue: "validate",
+                                                 durable: false,
+                                                 exclusive: false,
+                                                 autoDelete: false,
+                                                 arguments: null);
+
+                            var bodySend = Encoding.UTF8.GetBytes(message);
+
+                            channelSend.BasicPublish(exchange: "",
+                                                 routingKey: "validate",
+                                                 basicProperties: null,
+                                                 body: bodySend);
+                            Console.WriteLine(" [x] Sent {0}", message);
+                        }
                     };
                     channel.BasicConsume(queue: "date-queue",
                                          autoAck: true,
                                          consumer: consumer);
+               
 
                     Console.WriteLine(" Press [enter] to exit.");
                     Console.ReadLine();
                 }
-
-                //send to validation***
-                if (toValidate != "")
-                {
-                    string mensaje = toValidate;
-                    Console.WriteLine("Sending {0}", mensaje);
-                    factory = new ConnectionFactory() { HostName = "localhost" };
-                    using (var connection = factory.CreateConnection())
-                    using (var channel = connection.CreateModel())
-                    {
-                        channel.QueueDeclare(queue: "validate",
-                                             durable: false,
-                                             exclusive: false,
-                                             autoDelete: false,
-                                             arguments: null);
-
-                        string message = mensaje;
-                        var body = Encoding.UTF8.GetBytes(message);
-
-                        channel.BasicPublish(exchange: "",
-                                             routingKey: "validate",
-                                             basicProperties: null,
-                                             body: body);
-                        Console.WriteLine(" [x] Sent {0}", message);
-                    }
-
-                }
-
-
-
             }
-
-
-
         }
     }
 }

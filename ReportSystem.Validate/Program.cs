@@ -14,6 +14,7 @@ namespace ReportSystem.Validate
     {
         public static void Main(string[] args)
         {
+            Console.WriteLine("***VALIDATE***");
             var factory = new ConnectionFactory() { HostName = "localhost" };
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())

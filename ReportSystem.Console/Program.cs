@@ -16,6 +16,7 @@ namespace ReportSystem.Console
         {
             while (true)
             {
+                System.Console.WriteLine("***FRONTEND***");
                 System.Console.WriteLine("Report system\nIngrese la fecha para subir las sales: ");
                 var date = System.Console.ReadLine();
                 date = DateTime.Parse(date).ToString("yyyyMMdd");
