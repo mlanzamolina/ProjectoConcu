@@ -1,12 +1,13 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace ReportSystem.BranchOffices.Models
+namespace ReportSystem.Collector.Models
 {
     public class salesDto
     {
         [Key]
         public string username { get; set; }
+
         public string idCars { get; set; }
         public double price { get; set; }
         public string VIN { get; set; }

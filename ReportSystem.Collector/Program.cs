@@ -8,6 +8,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Text;
 using System.Reflection.Metadata;
+using System.IO;
+using ReportSystem.Collector.Models;
+using System.Text.Json;
+using ReportSystem.Collector.Models;
+using System.Xml.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using JsonSerializer = Newtonsoft.Json.JsonSerializer;
 
 namespace ReportSystem.Collector
 {
@@ -28,29 +36,39 @@ namespace ReportSystem.Collector
                                          arguments: null);
 
                     var consumer = new EventingBasicConsumer(channel);
-                    consumer.Received += (model, ea) =>
+
+                    consumer.Received += async (model, ea) =>
                     {
                         var body = ea.Body.ToArray();
                         var message = Encoding.UTF8.GetString(body);
                         Console.WriteLine(" [x] Received {0}", message);
-                        Console.WriteLine("Sending {0}", message);
-                        factory = new ConnectionFactory() { HostName = "localhost" };
-                        using (var connectionSend = factory.CreateConnection())
-                        using (var channelSend = connectionSend.CreateModel())
+
+                        var sales = JsonConvert.DeserializeObject<List<salesDto>>(File.ReadAllText(@"c:\MOCK_DATA.json"));
+                        var result = sales.Select(obj => JsonConvert.SerializeObject(obj)).ToArray();
+                        for (int j = 0; j < result.Length; j++)
                         {
-                            channelSend.QueueDeclare(queue: "validate",
-                                                 durable: false,
-                                                 exclusive: false,
-                                                 autoDelete: false,
-                                                 arguments: null);
 
-                            var bodySend = Encoding.UTF8.GetBytes(message);
+                            string json = JsonConvert.SerializeObject(sales);
+                            message = result[j];
+                            factory = new ConnectionFactory() { HostName = "localhost" };
+                            using (var connectionSend = factory.CreateConnection())
+                            using (var channelSend = connectionSend.CreateModel())
+                            {
+                                channelSend.QueueDeclare(queue: "validate",
+                                                     durable: false,
+                                                     exclusive: false,
+                                                     autoDelete: false,
+                                                     arguments: null);
 
-                            channelSend.BasicPublish(exchange: "",
-                                                 routingKey: "validate",
-                                                 basicProperties: null,
-                                                 body: bodySend);
-                            Console.WriteLine(" [x] Sent {0}", message);
+                                var bodySend = Encoding.UTF8.GetBytes(message);
+
+                                channelSend.BasicPublish(exchange: "",
+                                                     routingKey: "validate",
+                                                     basicProperties: null,
+                                                     body: bodySend);
+                                Console.WriteLine(" [x] Sent {0}", message);
+                            }
+                           
                         }
                     };
                     channel.BasicConsume(queue: "date-queue",

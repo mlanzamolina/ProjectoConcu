@@ -28,6 +28,7 @@ namespace ReportSystem.BranchOffices.Controllers
             return await _context.sales.ToListAsync();
         }
 
+
         // GET: api/sales/5
         [HttpGet("{id}")]
         public async Task<ActionResult<salesDto>> GetsalesDto(string id)
