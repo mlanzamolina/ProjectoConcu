@@ -18,7 +18,8 @@ namespace ReportSystem.Console
         private readonly EventingBasicConsumer _consumer;
         static void Main(string[] args)
         {
-
+            for (; ; ) 
+            {
             System.Console.WriteLine("***FRONTEND***");
             System.Console.WriteLine("Report system\nIngrese la fecha para subir las sales: ");
             var date = System.Console.ReadLine();
@@ -62,24 +63,36 @@ namespace ReportSystem.Console
 
                 System.Console.WriteLine(" Press [enter] to exit.");
                 System.Console.ReadLine();
+            }
+            string fileName = @"C:\MOCK_DATA.json";
 
-                string fileName = @"C:\MOCK_DATA.json";
+            if (File.Exists(fileName))
+            {
+                try
+                {
+                    File.Delete(fileName);
+                    System.Console.WriteLine(" Archivos borrados ");
+                }
+                catch (Exception e)
+                {
+                    System.Console.WriteLine("The deletion failed: {0}", e.Message);
+                }
+            }
+            else
+            {
+                //Console.WriteLine("Specified file doesn't exist");
+            }
 
-                if (File.Exists(fileName))
+                // Type your username and press enter
+                System.Console.WriteLine("Otra vez?: 1.si 2. no");
+
+                // Create a string variable and get user input from the keyboard and store it in the variable
+                int userName = Convert.ToInt32(System.Console.ReadLine());
+                if (userName == 2) 
                 {
-                    try
-                    {
-                        File.Delete(fileName);
-                    }
-                    catch (Exception e)
-                    {
-                        //Console.WriteLine("The deletion failed: {0}", e.Message);
-                    }
+                    break;
                 }
-                else
-                {
-                    //Console.WriteLine("Specified file doesn't exist");
-                }
+
 
             }
         }

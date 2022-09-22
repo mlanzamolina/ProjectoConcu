@@ -17,6 +17,7 @@ using static System.Net.Mime.MediaTypeNames;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Threading;
 
 namespace ReportSystem.Validate
 {
@@ -24,120 +25,125 @@ namespace ReportSystem.Validate
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine("***VALIDATE***");
-            char[] charsToTrim = { '[', ']' };
+            Task t3 = Task.Run(() => {
+                Console.WriteLine("***VALIDATE***");
+                char[] charsToTrim = { '[', ']' };
 
-            string errores = " ";
-            var factory = new ConnectionFactory() { HostName = "localhost" };
-            using (var connection = factory.CreateConnection())
-            using (var channel = connection.CreateModel())
-            {
-                channel.QueueDeclare(queue: "validate",
-                                     durable: false,
-                                     exclusive: false,
-                                     autoDelete: false,
-                                     arguments: null);
-
-                var consumer = new EventingBasicConsumer(channel);
-                consumer.Received += (model, ea) =>
+                string errores = " ";
+                var factory = new ConnectionFactory() { HostName = "localhost" };
+                using (var connection = factory.CreateConnection())
+                using (var channel = connection.CreateModel())
                 {
-                    var body = ea.Body.ToArray();
-                    var message = Encoding.UTF8.GetString(body);
-                    //Console.WriteLine(" [x] Received {0}", message);
+                    channel.QueueDeclare(queue: "validate",
+                                         durable: false,
+                                         exclusive: false,
+                                         autoDelete: false,
+                                         arguments: null);
 
-                    salesDto sls = JsonConvert.DeserializeObject<salesDto>(message);
-                    string status = "Invalid sale";
-
-                    EmpleadoDto emp=new EmpleadoDto();
-                    bool empHay = true;
-
-                    if (sls.username != null)
+                    var consumer = new EventingBasicConsumer(channel);
+                    consumer.Received += (model, ea) =>
                     {
-                        string username = GetSellerUserName(sls.username);
+                        var body = ea.Body.ToArray();
+                        var message = Encoding.UTF8.GetString(body);
+                        //Console.WriteLine(" [x] Received {0}", message);
 
-                        string result = username.Trim(charsToTrim);
-                        try
+                        salesDto sls = JsonConvert.DeserializeObject<salesDto>(message);
+                        string status = "Invalid sale";
+
+                        EmpleadoDto emp = new EmpleadoDto();
+                        bool empHay = true;
+
+                        if (sls.username != null)
                         {
+                            string username = GetSellerUserName(sls.username);
 
-                            emp = JsonConvert.DeserializeObject<EmpleadoDto>(result);
-                            if (emp == null)
+                            string result = username.Trim(charsToTrim);
+                            try
                             {
-                                empHay = false;
-                            }
-                            //Console.WriteLine(GetSellerUserName(emp.username).Trim(charsToTrim));
-                        }
-                        catch 
-                        {
-                        }
 
-                        /*  Console.WriteLine(sls.division_id);
-                         Console.WriteLine (emp.branchOfficeId);*/
-
-                        if (username != null && empHay )
-                        {
-                            if (sls.division_id == emp.branchOfficeId) 
-                            {
-                                carsDto cartemp = JsonConvert.DeserializeObject<carsDto>(GetCarVin(sls.idCars));
-                                Console.WriteLine(GetCarVin(sls.idCars));
-                                if (sls.VIN == cartemp.VIN && emp.branchOfficeId == cartemp.branchOfficeId)
+                                emp = JsonConvert.DeserializeObject<EmpleadoDto>(result);
+                                if (emp == null)
                                 {
+                                    empHay = false;
+                                }
+                                //Console.WriteLine(GetSellerUserName(emp.username).Trim(charsToTrim));
+                            }
+                            catch
+                            {
+                            }
 
-                                    if (sls.buyer_name != null && sls.buyer_id != null && sls.buyer_last_name != null)
+                            /*  Console.WriteLine(sls.division_id);
+                             Console.WriteLine (emp.branchOfficeId);*/
+
+                            if (username != null && empHay)
+                            {
+                                if (sls.division_id == emp.branchOfficeId)
+                                {
+                                    carsDto cartemp = JsonConvert.DeserializeObject<carsDto>(GetCarVin(sls.idCars));
+                                    Console.WriteLine(GetCarVin(sls.idCars));
+                                    if (sls.VIN == cartemp.VIN && emp.branchOfficeId == cartemp.branchOfficeId)
                                     {
 
-                                        //all good
-                                        errores = "Sin Errores!!";
+                                        if (sls.buyer_name != null && sls.buyer_id != null && sls.buyer_last_name != null)
+                                        {
 
+                                            //all good
+                                            errores = "Sin Errores!!";
+
+                                        }
+                                        else
+                                        {
+                                            errores = " nombre del comprador incorrecto | id de comprador incorrecto | apellido del comprador incorrecto ";
+                                        }
                                     }
                                     else
                                     {
-                                        errores = " nombre del comprador incorrecto | id de comprador incorrecto | apellido del comprador incorrecto ";
+                                        errores = " VIN del auto incorrecto y/o el carro no pertenece a esa sucursal ";
                                     }
-                                }
-                                else
-                                {
-                                    errores = " VIN del auto incorrecto y/o el carro no pertenece a esa sucursal ";
+
                                 }
 
                             }
-                           
+                            else
+                            {
+                                errores = " empleado username nulo y/o el empleado no pertenece a esa sucursal ";
+                            }
+
                         }
                         else
                         {
-                            errores = " empleado username nulo y/o el empleado no pertenece a esa sucursal ";
+                            errores = " username incorrecto";
                         }
+                        using (var connection = factory.CreateConnection())
+                        using (var channel = connection.CreateModel())
+                        {
+                            channel.QueueDeclare(queue: "gateway",
+                                                 durable: false,
+                                                 exclusive: false,
+                                                 autoDelete: false,
+                                                 arguments: null);
 
-                    }
-                    else 
-                    {
-                        errores = " username incorrecto";
-                    }
-                    using (var connection = factory.CreateConnection())
-                    using (var channel = connection.CreateModel())
-                    {
-                        channel.QueueDeclare(queue: "gateway",
-                                             durable: false,
-                                             exclusive: false,
-                                             autoDelete: false,
-                                             arguments: null);
+                            string message2 = errores + " Name: " + sls.buyer_name + " LastName: " + sls.buyer_last_name + " Car Price: " + sls.price;
+                            var body2 = Encoding.UTF8.GetBytes(message2);
 
-                        string message2 = errores + " Name: " + sls.buyer_name + " LastName: " + sls.buyer_last_name + " Car Price: " + sls.price;
-                        var body2 = Encoding.UTF8.GetBytes(message2);
+                            channel.BasicPublish(exchange: "",
+                                                 routingKey: "gateway",
+                                                 basicProperties: null,
+                                                 body: body2);
+                            Console.WriteLine(" [x] Sent {0}", message2);
+                        }
+                    };
+                    channel.BasicConsume(queue: "validate",
+                    autoAck: true,
+                    consumer: consumer);
 
-                        channel.BasicPublish(exchange: "",
-                                             routingKey: "gateway",
-                                             basicProperties: null,
-                                             body: body2);
-                        Console.WriteLine(" [x] Sent {0}", message2);
-                    }
-                };
-                channel.BasicConsume(queue: "validate",
-                autoAck: true,
-                consumer: consumer);
-
-                Console.WriteLine(" Press [enter] to exit.");
-                Console.ReadLine();
-            }
+                    Console.WriteLine(" Press [enter] to exit.");
+                    Console.ReadLine();
+                }
+            });
+            // Wait for the task to finish.
+            t3.Wait();
+          
         }
 
         public static string GetSellerUserName(string request)

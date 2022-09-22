@@ -24,7 +24,8 @@ namespace ReportSystem.Collector
         public static void Main(string[] args)
         {
             Console.WriteLine("***COLLECTOR***");
-            while (true) {
+            while (true)
+            {
                 var factory = new ConnectionFactory() { HostName = "localhost" };
                 using (var connection = factory.CreateConnection())
                 using (var channel = connection.CreateModel())
@@ -42,42 +43,70 @@ namespace ReportSystem.Collector
                         var body = ea.Body.ToArray();
                         var message = Encoding.UTF8.GetString(body);
                         Console.WriteLine(" [x] Received {0}", message);
-
-                        var sales = JsonConvert.DeserializeObject<List<salesDto>>(File.ReadAllText(@"c:\MOCK_DATA.json"));
-                        var result = sales.Select(obj => JsonConvert.SerializeObject(obj)).ToArray();
-                        for (int j = 0; j < result.Length; j++)
+                        try
                         {
+                            var sales = JsonConvert.DeserializeObject<List<salesDto>>(File.ReadAllText(@"c:\MOCK_DATA.json"));
 
-                            string json = JsonConvert.SerializeObject(sales);
-                            message = result[j];
-                            factory = new ConnectionFactory() { HostName = "localhost" };
-                            using (var connectionSend = factory.CreateConnection())
-                            using (var channelSend = connectionSend.CreateModel())
+                            var result = sales.Select(obj => JsonConvert.SerializeObject(obj)).ToArray();
+
+
+                            for (int j = 0; j < result.Length; j++)
                             {
-                                channelSend.QueueDeclare(queue: "validate",
+
+                                string json = JsonConvert.SerializeObject(sales);
+                                message = result[j];
+                                factory = new ConnectionFactory() { HostName = "localhost" };
+                                using (var connectionSend = factory.CreateConnection())
+                                using (var channelSend = connectionSend.CreateModel())
+                                {
+                                    channelSend.QueueDeclare(queue: "validate",
+                                                         durable: false,
+                                                         exclusive: false,
+                                                         autoDelete: false,
+                                                         arguments: null);
+
+                                    var bodySend = Encoding.UTF8.GetBytes(message);
+
+                                    channelSend.BasicPublish(exchange: "",
+                                                         routingKey: "validate",
+                                                         basicProperties: null,
+                                                         body: bodySend);
+                                    Console.WriteLine(" [x] Sent {0}", message);
+                                }
+
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            var factory = new ConnectionFactory() { HostName = "localhost" };
+                            using (var connection = factory.CreateConnection())
+                            using (var channel = connection.CreateModel())
+                            {
+                                channel.QueueDeclare(queue: "gateway",
                                                      durable: false,
                                                      exclusive: false,
                                                      autoDelete: false,
                                                      arguments: null);
 
-                                var bodySend = Encoding.UTF8.GetBytes(message);
+                                string m = "NO SE ENCONTRO ARCHIVO CON ESE NOMBRE";
+                                var b = Encoding.UTF8.GetBytes(m);
 
-                                channelSend.BasicPublish(exchange: "",
-                                                     routingKey: "validate",
+                                channel.BasicPublish(exchange: "",
+                                                     routingKey: "gateway",
                                                      basicProperties: null,
-                                                     body: bodySend);
-                                Console.WriteLine(" [x] Sent {0}", message);
+                                                     body: b);
+                                Console.WriteLine(" [x] Sent {0}", m);
                             }
-                           
                         }
                     };
                     channel.BasicConsume(queue: "date-queue",
                                          autoAck: true,
                                          consumer: consumer);
-               
+
 
                     Console.WriteLine(" Press [enter] to exit.");
                     Console.ReadLine();
+
                 }
             }
         }
