@@ -91,12 +91,12 @@ namespace ReportSystem.Validate
                                     }
                                     else
                                     {
-                                        errores += " nombre del comprador incorrecto | id de comprador incorrecto | apellido del comprador incorrecto ";
+                                        errores = " nombre del comprador incorrecto | id de comprador incorrecto | apellido del comprador incorrecto ";
                                     }
                                 }
                                 else
                                 {
-                                    errores += " VIN del auto incorrecto y/o el carro no pertenece a esa sucursal ";
+                                    errores = " VIN del auto incorrecto y/o el carro no pertenece a esa sucursal ";
                                 }
 
                             }
@@ -104,13 +104,13 @@ namespace ReportSystem.Validate
                         }
                         else
                         {
-                            errores += " empleado username nulo y/o el empleado no pertenece a esa sucursal ";
+                            errores = " empleado username nulo y/o el empleado no pertenece a esa sucursal ";
                         }
 
                     }
                     else 
                     {
-                        errores += " username incorrecto";
+                        errores = " username incorrecto";
                     }
                     using (var connection = factory.CreateConnection())
                     using (var channel = connection.CreateModel())
